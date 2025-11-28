@@ -9,6 +9,12 @@ terraform {
   }
 }
 
+import {
+  to = aws_eks_cluster.cluster
+  id = "TTA"
+}
+
+
 
 data "aws_iam_policy_document" "cluster_assume_role" {
   statement {
@@ -22,7 +28,7 @@ data "aws_iam_policy_document" "cluster_assume_role" {
 }
 
 resource "aws_eks_node_group" "nodes" {
-  cluster_name    = "TTA"
+  cluster_name    = var.name
   node_group_name = "${var.name}-Graph"
   node_role_arn   = aws_iam_role.node_group.arn
   subnet_ids      = data.aws_subnets.default.ids
