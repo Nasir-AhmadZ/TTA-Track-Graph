@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from datetime import datetime
+from collections import defaultdict
 from bson import ObjectId
 
 from .schemas import EntryStart, Entry, ProjectCreate, Project, EntryUpdate
@@ -11,9 +12,6 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 app = FastAPI(title="Time Tracker Graph")
-currentUser = "691c8bf8d691e46d00068bf3"
-
-
 
 #******************************Graphing functions****************************************
 
@@ -28,14 +26,19 @@ def get_graph_by_project(project_id: str):
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    #fetch entries belonging to project
-    entries = entries_collection.find({"project_group_id": ObjectId(project_id)})   
-    date = []
+    totals = defaultdict(int) 
+    date = [] 
     duration = []
+
+    entries = entries_collection.find({"project_group_id": project["_id"]})
     for e in entries:
         entry = entry_helper(e)
-        date.append(entry["starttime"].strftime("%Y-%m-%d"))
-        duration.append(entry["duration"])
+        date_time = entry["starttime"].strftime("%Y-%m-%d")
+        totals[date_time] += int(entry["duration"] or 0)
+
+    sorted_items = sorted(totals.items())
+    date = [d for d, _ in sorted_items]
+    duration = [v for _, v in sorted_items]   
     plt.plot(date, duration)
     plt.grid(True)
     plt.savefig("graph.png")
@@ -47,15 +50,22 @@ def get_graph_by_project(project_id: str):
 @app.get("/graph/user/{user_id}",status_code=200)
 def get_graph_by_user(user_id: str):
     projects = projects_collection.find({"owner_id": ObjectId(user_id)})
-    date = []
+    totals = defaultdict(int) 
+
+    date = [] 
     duration = []
+
     for project in projects:
         entries = entries_collection.find({"project_group_id": project["_id"]})
         for e in entries:
             entry = entry_helper(e)
-            date.append(entry["starttime"].strftime("%Y-%m-%d"))
-            duration.append(entry["duration"]) 
-    
+            date_time = entry["starttime"].strftime("%Y-%m-%d")
+            totals[date_time] += int(entry["duration"] or 0)
+
+    sorted_items = sorted(totals.items())
+    date = [d for d, _ in sorted_items]
+    duration = [v for _, v in sorted_items]    
+
     plt.plot(date, duration)
     plt.grid(True)
     plt.savefig("graph.png")
