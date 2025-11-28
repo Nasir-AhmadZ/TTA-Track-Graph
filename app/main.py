@@ -36,9 +36,9 @@ def get_graph_by_project(project_id: str):
         date_time = entry["starttime"].strftime("%Y-%m-%d")
         totals[date_time] += int(entry["duration"] or 0)
 
-    sorted_items = sorted(totals.items())
-    date = [d for d, _ in sorted_items]
-    duration = [v for _, v in sorted_items]   
+    sort_entries = sorted(totals.items())
+    date = [d for d, _ in sort_entries]
+    duration = [v for _, v in sort_entries]   
     plt.plot(date, duration)
     plt.grid(True)
     plt.savefig("graph.png")
@@ -62,9 +62,9 @@ def get_graph_by_user(user_id: str):
             date_time = entry["starttime"].strftime("%Y-%m-%d")
             totals[date_time] += int(entry["duration"] or 0)
 
-    sorted_items = sorted(totals.items())
-    date = [d for d, _ in sorted_items]
-    duration = [v for _, v in sorted_items]    
+    sort_entries = sorted(totals.items())
+    date = [d for d, _ in sort_entries]
+    duration = [v for _, v in sort_entries]    
 
     plt.plot(date, duration)
     plt.grid(True)
