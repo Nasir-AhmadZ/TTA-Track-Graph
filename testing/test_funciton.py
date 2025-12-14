@@ -1,3 +1,5 @@
+import pytest
+
 def test_proj_graph(client):
     r=client.get("/graph/proj/693ab9cb2a472cca87e3c75a")
     assert r.status_code == 200
