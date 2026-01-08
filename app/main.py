@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from pathlib import Path
+
 app = FastAPI(title="Time Tracker Graph")
 currentUser = "691c8bf8d691e46d00068bf3"
 
@@ -41,7 +42,6 @@ def get_graph_by_project(project_id: str):
     date = [d for d, _ in sort_entries]
     duration = [v for _, v in sort_entries]   
     plt.plot(date, duration)
-    plt.set_ylim(ymin=0)
     plt.grid(True)
     plt.savefig("graph.png")
     image_path = Path("graph.png")
@@ -69,7 +69,6 @@ def get_graph_by_user(user_id: str):
     duration = [v for _, v in sort_entries]    
 
     plt.plot(date, duration)
-    plt.set_ylim(ymin=0)
     plt.grid(True)
     plt.savefig("graph.png")
     image_path = Path("graph.png")
@@ -98,7 +97,6 @@ def get_graph_by_user_time(user_id: str, tim_in: str, tim_out: str):
     duration = [v for _, v in sort_entries]    
 
     plt.plot(date, duration)
-    plt.set_ylim(ymin=0)
     plt.grid(True)
     plt.savefig("graph.png")
     image_path = Path("graph.png")
@@ -132,7 +130,6 @@ def get_graph_by_project(project_id: str, tim_in: str, tim_out: str):
     date = [d for d, _ in sort_entries]
     duration = [v for _, v in sort_entries]   
     plt.plot(date, duration)
-    plt.set_ylim(ymin=0)
     plt.grid(True)
     plt.savefig("graph.png")
     image_path = Path("graph.png")
