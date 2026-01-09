@@ -31,7 +31,7 @@ jobs:
 
     - name: Run tests with coverage and enforce threshold
       run: |
-        pytest --cov=Src --cov-fail-under=70 --cov-report=term-missing
+        pytest --cov=app --cov-fail-under=80 --cov-report=term-missing
   docker:
     runs-on: ubuntu-latest
     steps:
