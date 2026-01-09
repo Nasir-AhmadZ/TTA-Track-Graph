@@ -49,7 +49,7 @@ resource "kubernetes_deployment" "nginx" {
   }
 
   spec {
-    replicas = 2
+    replicas = var.replicas
     selector {
       match_labels = {
         App = "TTA-Graph-app"
@@ -63,11 +63,11 @@ resource "kubernetes_deployment" "nginx" {
       }
       spec {
         container {
-          image = "mcarroll321/tta-login"
+          image = "mcarroll321/tta-graph"
           name  = "ttagraphcontainer"
 
           port {
-            container_port = 8001
+            container_port = 8004
           }
 
           resources {
@@ -95,8 +95,8 @@ resource "kubernetes_service" "nginx" {
       App = kubernetes_deployment.nginx.spec.0.template.0.metadata[0].labels.App
     }
     port {
-      port        = 8001
-      target_port = 8001
+      port        = 8004
+      target_port = 8004
     }
 
     type = "LoadBalancer"

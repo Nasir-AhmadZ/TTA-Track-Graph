@@ -15,7 +15,6 @@ import {
 }
 
 
-
 data "aws_iam_policy_document" "cluster_assume_role" {
   statement {
     effect  = "Allow"
@@ -28,8 +27,8 @@ data "aws_iam_policy_document" "cluster_assume_role" {
 }
 
 resource "aws_eks_node_group" "nodes" {
-  cluster_name    = var.name
-  node_group_name = "${var.name}-Graph"
+  cluster_name    = "TTA"
+  node_group_name = "${var.name}"
   node_role_arn   = aws_iam_role.node_group.arn
   subnet_ids      = data.aws_subnets.default.ids
   instance_types = var.instance_types
@@ -51,7 +50,7 @@ resource "aws_eks_node_group" "nodes" {
 }
 
 resource "aws_iam_role" "node_group" {
-  name               = "${var.name}-Graph-node-group"
+  name               = "${var.name}-node-group"
   assume_role_policy = data.aws_iam_policy_document.node_assume_role.json
 }
 
