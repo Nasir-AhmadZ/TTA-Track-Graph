@@ -3,6 +3,8 @@ from fastapi.responses import FileResponse
 from datetime import datetime
 from collections import defaultdict
 from bson import ObjectId
+import matplotlib
+matplotlib.use("Agg")
 
 from .schemas import EntryStart, Entry, ProjectCreate, Project, EntryUpdate
 from .models import entry_helper, project_helper
@@ -13,67 +15,103 @@ import pandas as pd
 from pathlib import Path
 
 app = FastAPI(title="Time Tracker Graph")
-currentUser = "691c8bf8d691e46d00068bf3"
 
 #******************************Graphing functions****************************************
 
-@app.get("/graph/proj/{project_id}",status_code=200)
+@app.get("/graph/proj/{project_id}", status_code=200)
 def get_graph_by_project(project_id: str):
-    #validate ObjectId format
     if not ObjectId.is_valid(project_id):
         raise HTTPException(status_code=400, detail="Invalid project id")
 
-    #check if the project exists
     project = projects_collection.find_one({"_id": ObjectId(project_id)})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    totals = defaultdict(int) 
-    date = [] 
-    duration = []
+    totals = defaultdict(int)
 
-    entries = entries_collection.find({"project_group_id": project["_id"]})
+    pid = project["_id"]
+    entries = entries_collection.find({
+        "project_group_id": {"$in": [pid, str(pid)]}
+    })
+
     for e in entries:
         entry = entry_helper(e)
-        date_time = entry["starttime"].strftime("%Y-%m-%d")
-        totals[date_time] += int(entry["duration"] or 0)
+        # If starttime is sometimes a string, handle that:
+        st = entry["starttime"]
+        if isinstance(st, str):
+            st = datetime.fromisoformat(st)
+
+        date_key = st.strftime("%Y-%m-%d")
+        totals[date_key] += int(entry.get("duration") or 0)
+
+    if not totals:
+        raise HTTPException(status_code=404, detail="No entries found for this project")
 
     sort_entries = sorted(totals.items())
-    date = [d for d, _ in sort_entries]
-    duration = [v for _, v in sort_entries]   
-    plt.plot(date, duration)
+    dates = [d for d, _ in sort_entries]
+    durations = [v for _, v in sort_entries]
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(dates, durations)
     plt.grid(True)
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
     plt.savefig("graph.png")
+    plt.close()
+
     image_path = Path("graph.png")
     if not image_path.is_file():
         return {"error": "Image not found on the server"}
     return FileResponse(image_path)
 
-@app.get("/graph/user/{user_id}",status_code=200)
+@app.get("/graph/user/{user_id}", status_code=200)
 def get_graph_by_user(user_id: str):
-    projects = projects_collection.find({"owner_id": ObjectId(user_id)})
-    totals = defaultdict(int) 
+    # Choose ONE depending on how owner_id is stored in Mongo:
 
-    date = [] 
-    duration = []
+    # If owner_id is stored as STRING:
+    projects = projects_collection.find({"owner_id": user_id})
+
+    # If owner_id is stored as ObjectId, use instead:
+    # if not ObjectId.is_valid(user_id):
+    #     raise HTTPException(status_code=400, detail="Invalid user id")
+    # projects = projects_collection.find({"owner_id": ObjectId(user_id)})
+
+    totals = defaultdict(int)
 
     for project in projects:
-        entries = entries_collection.find({"project_group_id": project["_id"]})
+        pid = project["_id"]
+        entries = entries_collection.find({
+            "project_group_id": {"$in": [pid, str(pid)]}
+        })
+
         for e in entries:
             entry = entry_helper(e)
-            date_time = entry["starttime"].strftime("%Y-%m-%d")
-            totals[date_time] += int(entry["duration"] or 0)
+            st = entry["starttime"]
+            if isinstance(st, str):
+                st = datetime.fromisoformat(st)
+
+            date_key = st.strftime("%Y-%m-%d")
+            totals[date_key] += int(entry.get("duration") or 0)
+
+    if not totals:
+        raise HTTPException(status_code=404, detail="No entries found for this user")
 
     sort_entries = sorted(totals.items())
-    date = [d for d, _ in sort_entries]
-    duration = [v for _, v in sort_entries]    
+    dates = [d for d, _ in sort_entries]
+    durations = [v for _, v in sort_entries]
 
-    plt.plot(date, duration)
+    plt.figure(figsize=(10, 4))
+    plt.plot(dates, durations)
     plt.grid(True)
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
     plt.savefig("graph.png")
+    plt.close()
+
     image_path = Path("graph.png")
     if not image_path.is_file():
         return {"error": "Image not found on the server"}
     return FileResponse(image_path)
+
 
 # python -m uvicorn app.main:app --reload
