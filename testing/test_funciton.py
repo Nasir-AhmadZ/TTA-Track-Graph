@@ -81,7 +81,7 @@ def test_proj_graph_not_found(client):
 
 def test_user_graph_success(client):
     #Test successful user graph generation
-    user_id = ObjectId()
+    user_id = str(ObjectId())
     project_id = ObjectId()
     
     configurations.projects_collection.insert_one({
@@ -100,10 +100,11 @@ def test_user_graph_success(client):
         "duration": 3600
     })
     
-    r = client.get(f"/graph/user/{str(user_id)}")
+    r = client.get(f"/graph/user/{user_id}")
     assert r.status_code == 200
 
 def test_user_graph_no_projects(client):
     user_id = str(ObjectId())
     r = client.get(f"/graph/user/{user_id}")
-    assert r.status_code == 200
+    assert r.status_code == 404
+    assert "No entries found for this user" in r.json()["detail"]
