@@ -45,7 +45,6 @@ def get_graph_by_project(project_id: str):
 
     for e in entries:
         entry = entry_helper(e)
-        # If starttime is sometimes a string, handle that:
         st = entry["starttime"]
         if isinstance(st, str):
             st = datetime.fromisoformat(st)
@@ -75,15 +74,8 @@ def get_graph_by_project(project_id: str):
 
 @app.get("/graph/user/{user_id}", status_code=200)
 def get_graph_by_user(user_id: str):
-    # Choose ONE depending on how owner_id is stored in Mongo:
 
-    # If owner_id is stored as STRING:
     projects = projects_collection.find({"owner_id": user_id})
-
-    # If owner_id is stored as ObjectId, use instead:
-    # if not ObjectId.is_valid(user_id):
-    #     raise HTTPException(status_code=400, detail="Invalid user id")
-    # projects = projects_collection.find({"owner_id": ObjectId(user_id)})
 
     totals = defaultdict(int)
 

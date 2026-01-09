@@ -63,7 +63,7 @@ resource "kubernetes_deployment" "nginx" {
       }
       spec {
         container {
-          image = "mcarroll321/tta-graph"
+          image = "mcarroll321/tta-tg"
           name  = "ttagraphcontainer"
 
           port {
