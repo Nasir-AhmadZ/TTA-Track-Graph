@@ -1,7 +1,7 @@
 variable "name" {
   description = "The name to use for the EKS cluster"
   type        = string
-  default     = "TTA"
+  default     = "TTA-Graph"
 }
 
 variable "min_size" {

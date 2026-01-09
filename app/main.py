@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from datetime import datetime
 from collections import defaultdict
@@ -15,6 +16,14 @@ import pandas as pd
 from pathlib import Path
 
 app = FastAPI(title="Time Tracker Graph")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 #******************************Graphing functions****************************************
 
